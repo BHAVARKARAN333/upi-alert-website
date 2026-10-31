@@ -1,0 +1,3 @@
+# Netlify / Static Hosting Rewrites for Clean URLs
+/manage-subscription    /manage-subscription.html    200
+/orders-support         /orders-support.html         200

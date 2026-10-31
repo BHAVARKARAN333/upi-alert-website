@@ -1,0 +1,165 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: is owner of the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper: is authorized admin
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email in ['kaushalgiri8080@gmail.com', 'bhavarkaran888@gmail.com']
+      );
+    }
+
+    // Helper: validate initial user document creation (must start as free tier)
+    function validUserCreate() {
+      let data = request.resource.data;
+      return data.isPremium == false
+        && (data.planType == 'free' || data.planType == 'cashier')
+        && (!('isAdmin' in data) || data.isAdmin == false)
+        && (!('role' in data) || data.role != 'admin');
+    }
+
+    // Helper: prevent regular users from modifying billing, role, and premium fields
+    function notUpdatingBillingFields() {
+      let protectedFields = [
+        'isPremium',
+        'planType',
+        'premiumExpiry',
+        'premiumStart',
+        'subscriptionStatus',
+        'latestOrderId',
+        'latestPurchaseToken',
+        'latestLifetimePurchaseToken',
+        'revenueAmount',
+        'billingProvider',
+        'subscriptionCancelledAt',
+        'cancelAtPeriodEnd',
+        'role',
+        'isAdmin',
+        'razorpayPaymentId',
+        'razorpaySubscriptionId',
+        'trialConverted'
+      ];
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(protectedFields);
+    }
+
+    // ==========================================
+    // USERS COLLECTION & SUBCOLLECTIONS
+    // ==========================================
+    match /users/{userId} {
+      // User can read their own document, admin can read any
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Creating initial user document: cannot self-grant premium
+      allow create: if isOwner(userId) && validUserCreate();
+      
+      // Updating user document: regular users can only edit non-billing profile fields
+      // Cloud Functions (Admin SDK) and designated admins bypass these rules to update billing
+      allow update: if isAdmin() || (isOwner(userId) && notUpdatingBillingFields());
+      
+      // Only admin can delete user records
+      allow delete: if isAdmin();
+      
+      // Subcollection: users/{userId}/orders
+      // Users can only read their own orders; writes are strictly server/admin only
+      match /orders/{orderId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin();
+      }
+
+      // Subcollection: users/{userId}/transactions (cashier / soundbox sync)
+      match /transactions/{txId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // ==========================================
+    // TOP-LEVEL ORDERS COLLECTION
+    // ==========================================
+    match /orders/{orderId} {
+      // Users can only read orders where they are the verified owner
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      // Only server / admin can write verified orders
+      allow write: if isAdmin();
+    }
+
+    // ==========================================
+    // REFUND REQUESTS COLLECTION
+    // ==========================================
+    match /refund_requests/{requestId} {
+      // User can only view their own refund requests
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      
+      // Authenticated users can submit a refund request for themselves
+      // Status MUST be 'pending_review' - users cannot approve their own refunds
+      allow create: if isAuthenticated() 
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending_review'
+        && request.resource.data.orderId is string
+        && request.resource.data.reason is string
+        && request.resource.data.description is string;
+        
+      // Updates and approvals restricted to admin / backend
+      allow update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // SUPPORT TICKETS COLLECTION
+    // ==========================================
+    match /support_tickets/{ticketId} {
+      // Users can read tickets they created; admin can read all
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      
+      // Submissions allowed if email and message are provided
+      allow create: if request.resource.data.userEmail is string
+        && request.resource.data.message is string
+        && (!('status' in request.resource.data) || request.resource.data.status == 'open');
+        
+      // Only admin can update ticket resolution or delete
+      allow update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // CANCELLATION FEEDBACK (SURVEY)
+    // ==========================================
+    match /cancellation_feedback/{feedbackId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // EXISTING APP COLLECTIONS (Store invites, referrals, stats)
+    // ==========================================
+    match /store_invites/{inviteId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /referral_codes/{codeId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /referrals/{referralId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /reward_queue/{rewardId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /app_stats/{statId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

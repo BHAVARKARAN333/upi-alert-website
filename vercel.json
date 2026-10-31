@@ -1,0 +1,7 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/manage-subscription", "destination": "/manage-subscription.html" },
+    { "source": "/orders-support", "destination": "/orders-support.html" }
+  ]
+}

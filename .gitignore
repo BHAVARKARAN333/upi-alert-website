@@ -1,0 +1,23 @@
+# Sensitive backend and secrets
+functions/
+.env*
+*.key
+*.pem
+service-account*.json
+
+# Bytecode & build artifacts
+*.class
+__pycache__/
+*.pyc
+build/
+dist/
+node_modules/
+
+# IDE & Editor configs
+.vscode/
+.cursor/
+.idea/
+
+# Scratch & temporary files
+base64_images.txt
+test_suite.js

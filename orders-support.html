@@ -1,0 +1,1156 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders &amp; Payment Support — PayEcho UPI Mobile Soundbox</title>
+  <meta name="description" content="PayEcho order history, invoice receipts, payment support, refund requests, and duplicate transaction resolution.">
+  <meta name="robots" content="noindex, follow">
+  <meta name="author" content="Think Tank Apps">
+  <link rel="canonical" href="https://payecho.online/orders-support">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PayEcho">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:title" content="Orders &amp; Payment Support — PayEcho">
+  <meta property="og:description" content="View transaction history, download payment receipts, request refunds, and contact billing support.">
+  <meta property="og:url" content="https://payecho.online/orders-support">
+  <meta property="og:image" content="https://payecho.online/assets/og-cover.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Orders &amp; Payment Support — PayEcho">
+  <meta name="twitter:description" content="Track your orders, receipts, refund requests, and billing support tickets.">
+  <meta name="twitter:image" content="https://payecho.online/assets/og-cover.png">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/site.css">
+  <link rel="stylesheet" href="assets/dashboard.css">
+  <!-- Firebase App & Services via Google CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "ContactPage",
+        "@id": "https://payecho.online/orders-support#webpage",
+        "url": "https://payecho.online/orders-support",
+        "name": "Order Management & Payment Support — PayEcho",
+        "description": "Customer order history, transaction lookup, receipts, refund tracking, and payment support.",
+        "isPartOf": { "@id": "https://payecho.online/#website" },
+        "publisher": { "@id": "https://thinktankapps.netlify.app/#organization" }
+      }
+    ]
+  }
+  </script>
+</head>
+<body class="nav-light">
+  <!-- NAVIGATION -->
+  <nav class="nav on-light" id="nav" aria-label="Main">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="assets/logo.png" alt="PayEcho Logo" width="34" height="34">
+        <span>Pay<span class="echo">Echo</span></span>
+      </a>
+      <div class="links">
+        <a href="index.html">Home</a>
+        <a href="manage-subscription.html">Manage Subscription</a>
+        <a href="orders-support.html" style="color:var(--brand); font-weight:700;">Orders &amp; Support</a>
+        <a href="support.html">Help Center</a>
+        <div id="navAuthArea" style="display:inline-flex; align-items:center; gap:8px;">
+          <button id="navLoginBtn" class="btn btn-amber" type="button" style="padding:8px 18px; font-size:.84rem;">Sign In</button>
+        </div>
+      </div>
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile" id="mobile">
+    <a href="index.html">Home</a>
+    <a href="manage-subscription.html">Manage Subscription</a>
+    <a href="orders-support.html">Orders &amp; Support</a>
+    <a href="support.html">Help Center</a>
+    <a href="https://play.google.com/store/apps/details?id=com.bhava.upialert" rel="noopener">Get PayEcho App</a>
+    <div id="mobileAuthArea" style="margin-top:16px;">
+      <button id="mobileLoginBtn" class="btn btn-amber" type="button">Sign In</button>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <header class="page-hero">
+    <div class="page-hero-inner">
+      <p class="crumbs"><a href="index.html">Home</a> / Orders &amp; Support</p>
+      <h1>Order History &amp; Payment Support</h1>
+      <p class="lead hi">Apne payments check karein, receipts download karein, refund request trace karein aur billing help lein.</p>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="dash-container">
+
+    <!-- STATE 1: LOADING SPINNER -->
+    <div id="loadingState" class="state-box" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <h2 class="state-title">Loading your order history...</h2>
+      <p class="state-desc">Retrieving your verified transactions and support records from PayEcho.</p>
+    </div>
+
+    <!-- STATE 2: AUTHENTICATION GATE (When Not Logged In) -->
+    <div id="unauthGate" class="state-box" style="display:none;">
+      <div class="state-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 12H6v-1c0-2 4-3.1 6-3.1s6 1.1 6 3.1v1z"/></svg>
+      </div>
+      <h2 class="state-title">Sign In to View Your Orders</h2>
+      <p class="state-desc hi">Privacy aur security ke liye, order history aur refund tracking dekhne ke liye please login karein.</p>
+      
+      <button id="btnGoogleLoginGate" class="btn-google" type="button">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        Sign in with Google
+      </button>
+
+      <div class="auth-divider"><span>OR WITH EMAIL</span></div>
+
+      <button id="btnOpenEmailModal" class="btn btn-outline-brand" type="button" style="width:100%;">
+        Sign in with Email &amp; Password
+      </button>
+    </div>
+
+    <!-- STATE 3: AUTHENTICATED ORDERS DASHBOARD -->
+    <div id="authDashboard" style="display:none;">
+
+      <!-- User Bar -->
+      <section class="user-bar" aria-label="Customer Account Profile">
+        <div class="user-profile">
+          <div class="user-avatar" id="userAvatar" aria-hidden="true">U</div>
+          <div class="user-meta">
+            <h3 id="userName">PayEcho Customer</h3>
+            <p><span id="userEmail">user@example.com</span> &bull; UID: <code id="userUidShort" style="font-size:.78rem; background:var(--sky); padding:2px 6px; border-radius:4px;">...</code></p>
+          </div>
+        </div>
+        <div class="user-actions">
+          <a href="manage-subscription.html" class="btn btn-sm btn-outline-brand">&larr; Subscription Settings</a>
+          <button id="btnSignOut" class="btn btn-sm btn-ghost" type="button" style="color:var(--muted); border-color:var(--line);">Sign Out</button>
+        </div>
+      </section>
+
+      <!-- SECTION 1: ORDER & TRANSACTION HISTORY -->
+      <section class="dash-card" id="orders-list" aria-label="Order and Transaction History">
+        <div class="dash-card-header">
+          <h2 class="dash-card-title">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            Your Orders &amp; Transactions
+          </h2>
+          <div>
+            <button id="btnNewRefundRequestTop" class="btn btn-sm btn-outline-danger" type="button">Request a Refund</button>
+          </div>
+        </div>
+
+        <div id="ordersTableContainer" class="table-responsive">
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Order ID</th>
+                <th>Plan Item</th>
+                <th>Amount</th>
+                <th>Payment Provider</th>
+                <th>Status</th>
+                <th>Reference ID</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty Orders State -->
+        <div id="ordersEmptyState" class="state-box" style="display:none; padding:36px 16px; margin:16px 0; border:none; box-shadow:none;">
+          <div class="state-icon" style="width:48px; height:48px;" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+          </div>
+          <h3 style="font-size:1.1rem; color:var(--ink); margin-bottom:6px;">No transactions recorded yet</h3>
+          <p class="state-desc" style="margin-bottom:14px;">Once you subscribe or purchase Lifetime Access, your order receipts will show up here.</p>
+          <a href="https://play.google.com/store/apps/details?id=com.bhava.upialert" class="btn btn-sm btn-amber" rel="noopener">Explore Plans in App</a>
+        </div>
+      </section>
+
+      <!-- SECTION 2: REFUND STATUS TRACKING -->
+      <section class="dash-card" id="refund-tracking" aria-label="Refund Request Tracking">
+        <div class="dash-card-header">
+          <h2 class="dash-card-title">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+            Refund Status Tracking
+          </h2>
+          <button id="btnOpenRefundModal" class="btn btn-sm btn-outline-danger" type="button">Submit Refund Request</button>
+        </div>
+
+        <div id="refundsTableContainer" class="table-responsive">
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th>Request Date</th>
+                <th>Request ID</th>
+                <th>Order ID</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Resolution Notes</th>
+              </tr>
+            </thead>
+            <tbody id="refundsTableBody">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="refundsEmptyState" class="state-box" style="display:none; padding:24px 16px; margin:10px 0; border:none; box-shadow:none;">
+          <p class="state-desc" style="margin-bottom:0;">You have no active or previous refund requests.</p>
+        </div>
+      </section>
+
+      <!-- SECTION 3: PAYMENT FAILURE & DUPLICATE PAYMENT ASSISTANCE -->
+      <section class="dash-card" style="border-left:4px solid var(--amber);" aria-label="Payment Troubleshooting">
+        <div class="dash-card-header">
+          <h2 class="dash-card-title">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
+            Payment Failure &amp; Duplicate Charge Support
+          </h2>
+        </div>
+
+        <div class="support-status-grid">
+          <div class="support-status-card">
+            <h4>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#054fcc"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              Payment Deducted but Not Activated?
+            </h4>
+            <p>
+              Banking servers may take 10-15 minutes to confirm UPI/card settlements. Please tap <strong>Restore Purchase</strong> in the PayEcho app Settings, or wait 15 minutes and refresh this dashboard.
+            </p>
+          </div>
+
+          <div class="support-status-card">
+            <h4>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#e02424"><path d="M19 13H5v-2h14v2z"/></svg>
+              Charged Twice for the Same Renewal?
+            </h4>
+            <p>
+              If a network glitch caused a duplicate charge, we will promptly refund the duplicate transaction upon verification. Use the 1-click button below to pre-fill your support ticket.
+            </p>
+            <button id="btnPreFillDuplicate" class="btn btn-sm btn-outline-danger" type="button" style="margin-top:8px;">Report Duplicate Charge</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: CONTACT BILLING & PAYMENT SUPPORT FORM -->
+      <section class="dash-card" id="support-form" aria-label="Contact Billing Support">
+        <div class="dash-card-header">
+          <h2 class="dash-card-title">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            Contact Billing &amp; Payment Support
+          </h2>
+        </div>
+
+        <!-- Success Feedback Banner -->
+        <div id="supportSuccessBanner" class="alert-banner alert-banner-success" style="display:none;" role="status">
+          <div class="alert-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+          </div>
+          <div>
+            <strong>Support Ticket Submitted Successfully!</strong>
+            <p id="supportSuccessMsg">Our billing resolution team has received your ticket and will follow up with you via email within 24 hours.</p>
+          </div>
+        </div>
+
+        <form id="contactSupportForm" onsubmit="return false;" novalidate>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
+            
+            <div class="form-group">
+              <label class="form-label" for="supportName">Your Name <span class="req">*</span></label>
+              <input type="text" id="supportName" class="form-control" placeholder="Karan Bhawar" required>
+              <div class="form-feedback" id="feedbackName"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="supportEmail">Your Email Address <span class="req">*</span></label>
+              <input type="email" id="supportEmail" class="form-control" placeholder="user@example.com" required>
+              <div class="form-feedback" id="feedbackEmail"></div>
+            </div>
+
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
+            
+            <div class="form-group">
+              <label class="form-label" for="supportCategory">Issue Category <span class="req">*</span></label>
+              <select id="supportCategory" class="form-control">
+                <option value="payment_failure">Payment Failure / Card Declined</option>
+                <option value="duplicate_charge">Duplicate Charge / Double Payment</option>
+                <option value="refund_inquiry">Refund Request Status Inquiry</option>
+                <option value="subscription_activation">Payment Debited but Premium Inactive</option>
+                <option value="gst_invoice">Tax / GST Invoice Request</option>
+                <option value="other">Other Billing Question</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="supportOrderId">Related Order ID (Optional)</label>
+              <input type="text" id="supportOrderId" class="form-control" placeholder="e.g. GPA.3821-4821-... or order_RPZ...">
+            </div>
+
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="supportSubject">Subject <span class="req">*</span></label>
+            <input type="text" id="supportSubject" class="form-control" placeholder="Brief summary of your billing question" required>
+            <div class="form-feedback" id="feedbackSubject"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="supportMessage">Message &amp; Transaction Details <span class="req">*</span></label>
+            <textarea id="supportMessage" class="form-control" rows="4" placeholder="Please describe what happened, including payment date, amount, UPI transaction reference if available..." required></textarea>
+            <div class="form-feedback" id="feedbackMessage"></div>
+          </div>
+
+          <!-- Anti-spam Honeypot (hidden) -->
+          <div style="display:none;" aria-hidden="true">
+            <input type="text" id="supportHp" name="website_hp" tabindex="-1" autocomplete="off">
+          </div>
+
+          <button id="btnSubmitSupport" class="btn btn-amber" type="button" style="min-width:180px;">
+            Submit Support Request
+          </button>
+        </form>
+      </section>
+
+    </div><!-- /authDashboard -->
+
+    <!-- SECTION 5: FAQS (Publicly visible) -->
+    <section class="dash-card" style="margin-top:40px;" aria-label="Frequently Asked Questions">
+      <div class="dash-card-header">
+        <h2 class="dash-card-title">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/></svg>
+          Billing, Payments &amp; Refunds FAQ
+        </h2>
+      </div>
+
+      <div class="faq" style="max-width:100%;">
+        <details>
+          <summary>Refund request submit karne ke baad kya hota hai?</summary>
+          <p>Hamari billing team aapke order ID aur transaction details ko verify karti hai. Google Play ke rules aur payment gateway guidelines ke mutabik authorized refund 3-5 business days mein aapke original bank account / card mein credit ho jata hai.</p>
+        </details>
+
+        <details>
+          <summary>Duplicate payment charge ho gaya toh refund kaise milega?</summary>
+          <p>Duplicate payment hone par upar diye gaye <strong>Report Duplicate Charge</strong> button par tap karein ya support form submit karein. Extra deducted amount verify hote hi bina kisi hassle ke refund initiate kar diya jayega.</p>
+        </details>
+
+        <details>
+          <summary>Google Play purchase ka receipt kahan se download karein?</summary>
+          <p>Aapke registered Google email par Google Play ka official tax invoice pehle se send hota hai. Iske alawa aap upar transaction table mein <strong>View Details &amp; Receipt</strong> button tap karke official PayEcho invoice preview aur print kar sakte hain.</p>
+        </details>
+
+        <details>
+          <summary>Alternative Billing (Razorpay) subscriptions kaise kaam karti hain?</summary>
+          <p>Alternative Billing transactions certified Indian banking payment gateways (UPI, Netbanking, Cards) ke through process hoti hain. Isme aapko Google Play payment methods ke alawa local payment options ka flexibility milta hai.</p>
+        </details>
+
+        <details>
+          <summary>Kya main subscription cancel karne ke baad bhi purane invoices dekh sakta hoon?</summary>
+          <p>Haan, cancellation ke baad bhi aapka account aur order history humesha secure rahegi aur aap kabhi bhi login karke purane receipts access kar sakte hain.</p>
+        </details>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: ORDER DETAILS & PRINTABLE RECEIPT -->
+  <div id="receiptModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="receiptModalTitle">
+    <div class="modal-dialog" style="max-width:620px;">
+      <div class="modal-header">
+        <h3 id="receiptModalTitle" class="modal-title">Payment Receipt</h3>
+        <button id="btnCloseReceiptModal" class="modal-close" type="button" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <div id="printableReceipt" class="receipt-paper">
+          <div class="receipt-head">
+            <div class="receipt-brand">
+              <strong>PayEcho</strong>
+              <p style="font-size:.82rem; color:var(--muted);">By Think Tank Apps &bull; UPI Mobile Soundbox</p>
+            </div>
+            <div style="text-align:right;">
+              <span id="rcptStatusBadge" class="badge badge-active">PAID</span>
+              <p id="rcptDate" style="font-size:.82rem; color:var(--muted); margin-top:4px;">Date: —</p>
+            </div>
+          </div>
+
+          <div style="margin-bottom:18px; font-size:.86rem; color:var(--ink-soft);">
+            <div><strong>Billed To:</strong> <span id="rcptCustomerName">Customer</span></div>
+            <div><strong>Email:</strong> <span id="rcptCustomerEmail">user@example.com</span></div>
+            <div><strong>Order ID:</strong> <code id="rcptOrderId" style="font-size:.84rem;">GPA.3821...</code></div>
+            <div><strong>Payment Provider:</strong> <span id="rcptProvider">Google Play Store</span></div>
+            <div id="rcptRazorpayRow" style="display:none;"><strong>Razorpay Payment Ref:</strong> <code id="rcptRazorpayId">—</code></div>
+          </div>
+
+          <div class="receipt-row" style="font-weight:700; background:var(--mist); padding:8px 10px; border-radius:6px; border:none;">
+            <span>Item Description</span>
+            <span>Amount</span>
+          </div>
+          <div class="receipt-row" style="padding:12px 10px;">
+            <span id="rcptItemName">PayEcho Pro Monthly Subscription</span>
+            <span id="rcptItemPrice" style="font-weight:700;">₹99.00</span>
+          </div>
+          <div class="receipt-row" style="padding:8px 10px; color:var(--muted); font-size:.82rem;">
+            <span>Taxes &amp; Processing (GST inclusive)</span>
+            <span>Included</span>
+          </div>
+
+          <div class="receipt-total">
+            <span>Total Paid</span>
+            <span id="rcptTotalAmount">₹99.00</span>
+          </div>
+
+          <p style="margin-top:24px; font-size:.76rem; color:var(--muted); text-align:center;">
+            This is an official computer-generated receipt for PayEcho software access. For billing queries, write to support@payecho.online.
+          </p>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button id="btnPrintReceipt" class="btn btn-sm btn-outline-brand" type="button">Print / Save PDF</button>
+        <button id="btnDismissReceipt" class="btn btn-sm btn-ghost" type="button" style="color:var(--muted); border-color:var(--line);">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: REFUND REQUEST DIALOG -->
+  <div id="refundModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="refundModalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="refundModalTitle" class="modal-title">Request a Refund</h3>
+        <button id="btnCloseRefundModal" class="modal-close" type="button" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom:14px; font-size:.9rem; color:var(--muted);">
+          Please select the order you would like to request a refund for and specify the reason.
+        </p>
+
+        <form id="refundForm" onsubmit="return false;">
+          <div class="form-group">
+            <label class="form-label" for="refundOrderSelect">Select Eligible Order <span class="req">*</span></label>
+            <select id="refundOrderSelect" class="form-control" required>
+              <option value="">-- Choose an order --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="refundReasonSelect">Reason for Refund <span class="req">*</span></label>
+            <select id="refundReasonSelect" class="form-control">
+              <option value="accidental_purchase">Accidental purchase / Unintended trial renewal</option>
+              <option value="duplicate_payment">Charged twice for the same billing period</option>
+              <option value="audio_technical_issue">Voice alert delay / Soundbox issue on my phone</option>
+              <option value="switched_phone">Changed device and no longer using PayEcho</option>
+              <option value="other">Other reason</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="refundDescription">Description / Additional Notes <span class="req">*</span></label>
+            <textarea id="refundDescription" class="form-control" rows="3" placeholder="Provide any details to help our billing team review your request quickly..." required></textarea>
+          </div>
+
+          <div class="notice-box" style="margin-top:10px;">
+            <strong>Authorization &amp; Timelines:</strong>
+            Refunds are reviewed by our billing operations team within 3-5 business days. Once authorized, amounts are returned via the original payment source.
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button id="btnDismissRefund" class="btn btn-sm btn-ghost" type="button" style="color:var(--muted); border-color:var(--line);">Cancel</button>
+        <button id="btnSubmitRefund" class="btn btn-sm btn-danger" type="button">Submit Refund Request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EMAIL AUTHENTICATION -->
+  <div id="emailAuthModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="emailModalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="emailModalTitle" class="modal-title">Sign In with Email</h3>
+        <button id="btnCloseEmailModal" class="modal-close" type="button" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="auth-tabs" role="tablist">
+          <button id="tabBtnSignIn" class="auth-tab-btn active" type="button" role="tab" aria-selected="true">Sign In</button>
+          <button id="tabBtnSignUp" class="auth-tab-btn" type="button" role="tab" aria-selected="false">Create Account</button>
+          <button id="tabBtnForgot" class="auth-tab-btn" type="button" role="tab" aria-selected="false">Reset Password</button>
+        </div>
+
+        <div id="authAlertBox" class="alert-banner alert-banner-danger" style="display:none; padding:10px 14px; font-size:.84rem;"></div>
+
+        <!-- Form: Sign In -->
+        <form id="formSignIn" onsubmit="return false;">
+          <div class="form-group">
+            <label class="form-label" for="signInEmail">Email Address <span class="req">*</span></label>
+            <input type="email" id="signInEmail" class="form-control" placeholder="you@example.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signInPassword">Password <span class="req">*</span></label>
+            <input type="password" id="signInPassword" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+          </div>
+          <button id="btnSubmitSignIn" class="btn btn-amber" type="button" style="width:100%;">Sign In</button>
+        </form>
+
+        <!-- Form: Sign Up -->
+        <form id="formSignUp" style="display:none;" onsubmit="return false;">
+          <div class="form-group">
+            <label class="form-label" for="signUpName">Full Name / Store Name <span class="req">*</span></label>
+            <input type="text" id="signUpName" class="form-control" placeholder="Karan General Store" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signUpEmail">Email Address <span class="req">*</span></label>
+            <input type="email" id="signUpEmail" class="form-control" placeholder="you@example.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signUpPassword">Password (minimum 6 characters) <span class="req">*</span></label>
+            <input type="password" id="signUpPassword" class="form-control" placeholder="Choose a password" minlength="6" required autocomplete="new-password">
+          </div>
+          <button id="btnSubmitSignUp" class="btn btn-amber" type="button" style="width:100%;">Create Account</button>
+        </form>
+
+        <!-- Form: Forgot Password -->
+        <form id="formForgot" style="display:none;" onsubmit="return false;">
+          <p style="font-size:.88rem; color:var(--muted); margin-bottom:14px;">Enter your email to receive a password reset link.</p>
+          <div class="form-group">
+            <label class="form-label" for="forgotEmail">Registered Email Address <span class="req">*</span></label>
+            <input type="email" id="forgotEmail" class="form-control" placeholder="you@example.com" required autocomplete="email">
+          </div>
+          <button id="btnSubmitForgot" class="btn btn-amber" type="button" style="width:100%;">Send Reset Link</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="index.html">
+          <img src="assets/logo.png" alt="PayEcho Logo" width="34" height="34">
+          <span>Pay<span class="echo">Echo</span></span>
+        </a>
+        <p class="hi">PayEcho by <a href="https://thinktankapps.netlify.app/" rel="noopener">Think Tank Apps</a> — free UPI mobile soundbox for Indian merchants. Turn your phone into an instant voice soundbox.</p>
+        <div class="social-row" aria-label="Social media links">
+          <a class="social-link" href="https://www.youtube.com/@PayEcho_App" rel="noopener" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8zM9.8 15.5v-7l6.3 3.5-6.3 3.5z"/></svg></a>
+          <a class="social-link" href="https://www.instagram.com/payecho_app/" rel="noopener" target="_blank" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.2.1 4.7 1.7 4.8 4.8.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 3.1-1.6 4.7-4.8 4.8-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-3.2-.1-4.7-1.7-4.8-4.8-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9C2.4 4 3.9 2.4 7.1 2.3 8.4 2.2 8.8 2.2 12 2.2m0 1.8c-3.2 0-3.5 0-4.8.1-2.3.1-3.3 1.1-3.4 3.4-.1 1.2-.1 1.6-.1 4.8s0 3.5.1 4.8c.1 2.2 1.1 3.3 3.4 3.4 1.2.1 1.6.1 4.8.1s3.5 0 4.8-.1c2.3-.1 3.3-1.2 3.4-3.4.1-1.2.1-1.6.1-4.8s0-3.5-.1-4.8c-.1-2.3-1.1-3.3-3.4-3.4-1.3-.1-1.6-.1-4.8-.1zm0 3.1a5 5 0 1 1 0 9.9 5 5 0 0 1 0-9.9zm0 8.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zm6.4-8.4a1.2 1.2 0 1 1-2.3 0 1.2 1.2 0 0 1 2.3 0z"/></svg></a>
+          <a class="social-link" href="https://share.google/s8zINX0nW2xGJ684l" rel="noopener" target="_blank" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.1C24 5.4 18.6 0 12 0S0 5.4 0 12.1C0 18.1 4.4 23.1 10.1 24v-8.4H7.1V12h3V9.4c0-3 1.8-4.6 4.5-4.6 1.3 0 2.6.2 2.6.2v2.9h-1.5c-1.5 0-1.9.9-1.9 1.8V12h3.3l-.5 3.6h-2.8V24C19.6 23.1 24 18.1 24 12.1z"/></svg></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="index.html">Home</a>
+        <a href="manage-subscription.html">Manage Subscription</a>
+        <a href="orders-support.html">Orders &amp; Support</a>
+        <a href="about.html">About PayEcho</a>
+        <a href="support.html">Support</a>
+      </div>
+      <div class="footer-col">
+        <h4>Guides &amp; Comparisons</h4>
+        <a href="best-free-upi-mobile-soundbox.html">Best Free Alternative</a>
+        <a href="upi-soundbox-app.html">Soundbox App</a>
+        <a href="payecho-vs-hardware-soundbox.html">vs Hardware Machine</a>
+        <a href="kirana-upi-alert.html">Kirana Alert</a>
+        <a href="blog/index.html">Blog</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal &amp; Support</h4>
+        <a href="https://play.google.com/store/apps/details?id=com.bhava.upialert" rel="noopener">Google Play Store</a>
+        <a href="privacy-policy.html">Privacy Policy</a>
+        <a href="terms-and-conditions.html">Terms &amp; Conditions</a>
+        <a href="mailto:bhavarkaran888@gmail.com">support@payecho.online</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 PayEcho &bull; <a href="https://thinktankapps.netlify.app/" rel="noopener">Think Tank Apps</a></p>
+      <p><a href="privacy-policy.html">Privacy</a> &bull; <a href="terms-and-conditions.html">Terms</a></p>
+    </div>
+  </footer>
+
+  <script src="assets/site.js"></script>
+  <script src="assets/payecho-firebase.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      // DOM Elements
+      const loadingState = document.getElementById('loadingState');
+      const unauthGate = document.getElementById('unauthGate');
+      const authDashboard = document.getElementById('authDashboard');
+
+      const userAvatar = document.getElementById('userAvatar');
+      const userName = document.getElementById('userName');
+      const userEmail = document.getElementById('userEmail');
+      const userUidShort = document.getElementById('userUidShort');
+      const btnSignOut = document.getElementById('btnSignOut');
+
+      // Orders Table
+      const ordersTableContainer = document.getElementById('ordersTableContainer');
+      const ordersTableBody = document.getElementById('ordersTableBody');
+      const ordersEmptyState = document.getElementById('ordersEmptyState');
+
+      // Refunds Table
+      const refundsTableContainer = document.getElementById('refundsTableContainer');
+      const refundsTableBody = document.getElementById('refundsTableBody');
+      const refundsEmptyState = document.getElementById('refundsEmptyState');
+
+      // Modals
+      const receiptModal = document.getElementById('receiptModal');
+      const btnCloseReceiptModal = document.getElementById('btnCloseReceiptModal');
+      const btnDismissReceipt = document.getElementById('btnDismissReceipt');
+      const btnPrintReceipt = document.getElementById('btnPrintReceipt');
+
+      const refundModal = document.getElementById('refundModal');
+      const btnCloseRefundModal = document.getElementById('btnCloseRefundModal');
+      const btnDismissRefund = document.getElementById('btnDismissRefund');
+      const btnSubmitRefund = document.getElementById('btnSubmitRefund');
+      const btnOpenRefundModal = document.getElementById('btnOpenRefundModal');
+      const btnNewRefundRequestTop = document.getElementById('btnNewRefundRequestTop');
+      const refundOrderSelect = document.getElementById('refundOrderSelect');
+      const refundReasonSelect = document.getElementById('refundReasonSelect');
+      const refundDescription = document.getElementById('refundDescription');
+
+      // Receipt Fields
+      const rcptStatusBadge = document.getElementById('rcptStatusBadge');
+      const rcptDate = document.getElementById('rcptDate');
+      const rcptCustomerName = document.getElementById('rcptCustomerName');
+      const rcptCustomerEmail = document.getElementById('rcptCustomerEmail');
+      const rcptOrderId = document.getElementById('rcptOrderId');
+      const rcptProvider = document.getElementById('rcptProvider');
+      const rcptRazorpayRow = document.getElementById('rcptRazorpayRow');
+      const rcptRazorpayId = document.getElementById('rcptRazorpayId');
+      const rcptItemName = document.getElementById('rcptItemName');
+      const rcptItemPrice = document.getElementById('rcptItemPrice');
+      const rcptTotalAmount = document.getElementById('rcptTotalAmount');
+
+      // Support Form
+      const contactSupportForm = document.getElementById('contactSupportForm');
+      const supportName = document.getElementById('supportName');
+      const supportEmail = document.getElementById('supportEmail');
+      const supportCategory = document.getElementById('supportCategory');
+      const supportOrderId = document.getElementById('supportOrderId');
+      const supportSubject = document.getElementById('supportSubject');
+      const supportMessage = document.getElementById('supportMessage');
+      const supportHp = document.getElementById('supportHp');
+      const btnSubmitSupport = document.getElementById('btnSubmitSupport');
+      const supportSuccessBanner = document.getElementById('supportSuccessBanner');
+      const supportSuccessMsg = document.getElementById('supportSuccessMsg');
+      const btnPreFillDuplicate = document.getElementById('btnPreFillDuplicate');
+
+      // Auth Modals & Buttons
+      const navLoginBtn = document.getElementById('navLoginBtn');
+      const mobileLoginBtn = document.getElementById('mobileLoginBtn');
+      const btnGoogleLoginGate = document.getElementById('btnGoogleLoginGate');
+      const btnOpenEmailModal = document.getElementById('btnOpenEmailModal');
+      const emailAuthModal = document.getElementById('emailAuthModal');
+      const btnCloseEmailModal = document.getElementById('btnCloseEmailModal');
+
+      const tabBtnSignIn = document.getElementById('tabBtnSignIn');
+      const tabBtnSignUp = document.getElementById('tabBtnSignUp');
+      const tabBtnForgot = document.getElementById('tabBtnForgot');
+      const formSignIn = document.getElementById('formSignIn');
+      const formSignUp = document.getElementById('formSignUp');
+      const formForgot = document.getElementById('formForgot');
+      const authAlertBox = document.getElementById('authAlertBox');
+      const btnSubmitSignIn = document.getElementById('btnSubmitSignIn');
+      const btnSubmitSignUp = document.getElementById('btnSubmitSignUp');
+      const btnSubmitForgot = document.getElementById('btnSubmitForgot');
+
+      let currentUser = null;
+      let userOrders = [];
+
+      function formatDate(date) {
+        if (!date) return '—';
+        return date.toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric'
+        });
+      }
+
+      function showAuthAlert(msg) {
+        authAlertBox.textContent = msg;
+        authAlertBox.style.display = 'block';
+      }
+
+      function hideAuthAlert() {
+        authAlertBox.textContent = '';
+        authAlertBox.style.display = 'none';
+      }
+
+      // Auth Listener
+      PayEchoAuth.init(function (user) {
+        currentUser = user;
+        loadingState.style.display = 'none';
+
+        if (user) {
+          unauthGate.style.display = 'none';
+          authDashboard.style.display = 'block';
+          navLoginBtn.textContent = 'Account';
+          mobileLoginBtn.textContent = 'Account';
+
+          const name = user.displayName || 'Shop Owner';
+          userName.textContent = name;
+          userEmail.textContent = user.email || '—';
+          userAvatar.textContent = name.charAt(0).toUpperCase();
+          userUidShort.textContent = user.uid.substring(0, 8);
+
+          supportName.value = name;
+          supportEmail.value = user.email || '';
+
+          loadUserOrders(user.uid);
+          loadUserRefundRequests(user.uid);
+        } else {
+          authDashboard.style.display = 'none';
+          unauthGate.style.display = 'block';
+          navLoginBtn.textContent = 'Sign In';
+          mobileLoginBtn.textContent = 'Sign In';
+        }
+      });
+
+      function loadUserOrders(uid) {
+        PayEchoAPI.getUserOrders(uid).then(function (orders) {
+          userOrders = orders || [];
+          ordersTableBody.innerHTML = '';
+          refundOrderSelect.innerHTML = '<option value="">-- Choose an order --</option>';
+
+          if (userOrders.length === 0) {
+            ordersTableContainer.style.display = 'none';
+            ordersEmptyState.style.display = 'block';
+            return;
+          }
+
+          ordersTableContainer.style.display = 'block';
+          ordersEmptyState.style.display = 'none';
+
+          userOrders.forEach(function (ord, index) {
+            // Populate refund dropdown
+            const opt = document.createElement('option');
+            opt.value = ord.orderId;
+            opt.textContent = `${ord.orderId} — ${ord.planName} (₹${ord.amount}) - ${formatDate(ord.createdAt)}`;
+            refundOrderSelect.appendChild(opt);
+
+            // Populate table
+            const tr = document.createElement('tr');
+            const badgeClass = ord.status === 'paid' ? 'badge-active' : (ord.status === 'refunded' ? 'badge-cancelled' : 'badge-expired');
+            const provClass = ord.provider === 'google_play' ? 'badge-provider-play' : 'badge-provider-razorpay';
+
+            tr.innerHTML = `
+              <td>${formatDate(ord.createdAt)}</td>
+              <td><code style="font-size:.82rem;">${ord.orderId}</code></td>
+              <td><strong>${ord.planName}</strong></td>
+              <td>₹${ord.amount}</td>
+              <td><span class="badge ${provClass}">${ord.providerDisplay}</span></td>
+              <td><span class="badge ${badgeClass}">${ord.status.toUpperCase()}</span></td>
+              <td>${ord.razorpayPaymentId ? `<code style="font-size:.78rem;">${ord.razorpayPaymentId}</code>` : '<span style="color:var(--muted); font-size:.82rem;">Standard Play Ref</span>'}</td>
+              <td>
+                <div style="display:flex; gap:6px;">
+                  <button class="btn btn-sm btn-outline-brand btn-view-receipt" data-index="${index}" type="button">Receipt</button>
+                  <button class="btn btn-sm btn-outline-danger btn-order-refund" data-orderid="${ord.orderId}" type="button">Refund</button>
+                </div>
+              </td>
+            `;
+            ordersTableBody.appendChild(tr);
+          });
+
+          // Bind view receipt buttons
+          document.querySelectorAll('.btn-view-receipt').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              const idx = parseInt(this.getAttribute('data-index'), 10);
+              openReceiptModal(userOrders[idx]);
+            });
+          });
+
+          // Bind refund buttons
+          document.querySelectorAll('.btn-order-refund').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              const oid = this.getAttribute('data-orderid');
+              refundOrderSelect.value = oid;
+              openRefundModal();
+            });
+          });
+
+        }).catch(function (err) {
+          console.error("Error loading orders:", err);
+        });
+      }
+
+      function loadUserRefundRequests(uid) {
+        PayEchoAPI.getUserRefundRequests(uid).then(function (requests) {
+          refundsTableBody.innerHTML = '';
+          if (!requests || requests.length === 0) {
+            refundsTableContainer.style.display = 'none';
+            refundsEmptyState.style.display = 'block';
+            return;
+          }
+
+          refundsTableContainer.style.display = 'block';
+          refundsEmptyState.style.display = 'none';
+
+          requests.forEach(function (req) {
+            const tr = document.createElement('tr');
+            let badgeClass = 'badge-cancelled';
+            let label = 'UNDER REVIEW';
+            if (req.status === 'approved' || req.status === 'processed') {
+              badgeClass = 'badge-active';
+              label = req.status.toUpperCase();
+            } else if (req.status === 'rejected') {
+              badgeClass = 'badge-failed';
+              label = 'DECLINED';
+            }
+
+            tr.innerHTML = `
+              <td>${formatDate(req.createdAt)}</td>
+              <td><code style="font-size:.82rem;">#${req.id.substring(0, 8)}</code></td>
+              <td><code style="font-size:.82rem;">${req.orderId}</code></td>
+              <td>${req.reason.replace(/_/g, ' ')}</td>
+              <td><span class="badge ${badgeClass}">${label}</span></td>
+              <td style="font-size:.84rem; color:var(--muted);">${req.adminNotes || 'Verification in progress by billing operations.'}</td>
+            `;
+            refundsTableBody.appendChild(tr);
+          });
+        }).catch(function (err) {
+          console.error("Error loading refunds:", err);
+        });
+      }
+
+      // Receipt Modal
+      function openReceiptModal(ord) {
+        if (!ord) return;
+        rcptCustomerName.textContent = (currentUser && currentUser.displayName) ? currentUser.displayName : 'Customer';
+        rcptCustomerEmail.textContent = (currentUser && currentUser.email) ? currentUser.email : '';
+        rcptOrderId.textContent = ord.orderId;
+        rcptDate.textContent = 'Date: ' + formatDate(ord.createdAt);
+        rcptProvider.textContent = ord.providerDisplay;
+        rcptItemName.textContent = ord.planName;
+        rcptItemPrice.textContent = '₹' + ord.amount + '.00';
+        rcptTotalAmount.textContent = '₹' + ord.amount + '.00';
+        
+        if (ord.status === 'refunded') {
+          rcptStatusBadge.className = 'badge badge-cancelled';
+          rcptStatusBadge.textContent = 'REFUNDED';
+        } else {
+          rcptStatusBadge.className = 'badge badge-active';
+          rcptStatusBadge.textContent = 'PAID';
+        }
+
+        if (ord.razorpayPaymentId) {
+          rcptRazorpayRow.style.display = 'block';
+          rcptRazorpayId.textContent = ord.razorpayPaymentId;
+        } else {
+          rcptRazorpayRow.style.display = 'none';
+        }
+
+        receiptModal.classList.add('is-open');
+      }
+
+      function closeReceiptModal() {
+        receiptModal.classList.remove('is-open');
+      }
+
+      btnCloseReceiptModal.addEventListener('click', closeReceiptModal);
+      btnDismissReceipt.addEventListener('click', closeReceiptModal);
+      btnPrintReceipt.addEventListener('click', function () {
+        window.print();
+      });
+
+      // Refund Modal
+      function openRefundModal() {
+        refundModal.classList.add('is-open');
+      }
+
+      function closeRefundModal() {
+        refundModal.classList.remove('is-open');
+      }
+
+      btnOpenRefundModal.addEventListener('click', openRefundModal);
+      btnNewRefundRequestTop.addEventListener('click', openRefundModal);
+      btnCloseRefundModal.addEventListener('click', closeRefundModal);
+      btnDismissRefund.addEventListener('click', closeRefundModal);
+
+      btnSubmitRefund.addEventListener('click', function () {
+        const orderId = refundOrderSelect.value;
+        const reason = refundReasonSelect.value;
+        const desc = refundDescription.value.trim();
+
+        if (!orderId) {
+          alert("Please select the order you wish to refund.");
+          return;
+        }
+        if (!desc) {
+          alert("Please provide a description explaining the issue.");
+          return;
+        }
+
+        btnSubmitRefund.disabled = true;
+        btnSubmitRefund.textContent = 'Submitting...';
+
+        const selectedOrder = userOrders.find(function (o) { return o.orderId === orderId; });
+
+        PayEchoAPI.requestRefund({
+          orderId: orderId,
+          amount: selectedOrder ? selectedOrder.amount : null,
+          reason: reason,
+          description: desc,
+          provider: selectedOrder ? selectedOrder.provider : 'google_play',
+          uid: currentUser ? currentUser.uid : null,
+          userEmail: currentUser ? currentUser.email : '',
+          userName: currentUser ? currentUser.displayName : 'Customer'
+        }).then(function (res) {
+          btnSubmitRefund.disabled = false;
+          btnSubmitRefund.textContent = 'Submit Refund Request';
+          closeRefundModal();
+          refundDescription.value = '';
+
+          alert(res.message || "Refund request submitted. Our team will verify and process it.");
+          if (currentUser) loadUserRefundRequests(currentUser.uid);
+        }).catch(function (err) {
+          btnSubmitRefund.disabled = false;
+          btnSubmitRefund.textContent = 'Submit Refund Request';
+          alert("Refund request error: " + (err.message || "Please contact support."));
+        });
+      });
+
+      // Pre-fill Duplicate Charge
+      btnPreFillDuplicate.addEventListener('click', function () {
+        supportCategory.value = 'duplicate_charge';
+        supportSubject.value = 'Duplicate Payment / Charged Twice';
+        supportMessage.value = 'I noticed a duplicate deduction for my PayEcho subscription renewal on my bank statement. Please verify my recent transactions and process a refund for the duplicate payment.';
+        
+        const formEl = document.getElementById('support-form');
+        formEl.scrollIntoView({ behavior: 'smooth' });
+        supportMessage.focus();
+      });
+
+      // Submit Contact Support Form
+      btnSubmitSupport.addEventListener('click', function () {
+        const name = supportName.value.trim();
+        const email = supportEmail.value.trim();
+        const category = supportCategory.value;
+        const orderId = supportOrderId.value.trim();
+        const subject = supportSubject.value.trim();
+        const msg = supportMessage.value.trim();
+        const hp = supportHp.value;
+
+        // Anti-spam honeypot
+        if (hp) {
+          console.warn("Honeypot filled.");
+          return;
+        }
+
+        // Validate
+        let hasError = false;
+        if (!name) {
+          document.getElementById('feedbackName').textContent = 'Please enter your name.';
+          hasError = true;
+        } else {
+          document.getElementById('feedbackName').textContent = '';
+        }
+
+        if (!email || email.indexOf('@') === -1) {
+          document.getElementById('feedbackEmail').textContent = 'Please enter a valid email address.';
+          hasError = true;
+        } else {
+          document.getElementById('feedbackEmail').textContent = '';
+        }
+
+        if (!subject) {
+          document.getElementById('feedbackSubject').textContent = 'Please provide a subject.';
+          hasError = true;
+        } else {
+          document.getElementById('feedbackSubject').textContent = '';
+        }
+
+        if (!msg) {
+          document.getElementById('feedbackMessage').textContent = 'Please write your message details.';
+          hasError = true;
+        } else {
+          document.getElementById('feedbackMessage').textContent = '';
+        }
+
+        if (hasError) return;
+
+        btnSubmitSupport.disabled = true;
+        btnSubmitSupport.textContent = 'Sending...';
+
+        PayEchoAPI.submitSupportTicket({
+          name: name,
+          email: email,
+          category: category,
+          orderId: orderId,
+          subject: subject,
+          message: msg,
+          uid: currentUser ? currentUser.uid : 'guest'
+        }).then(function (res) {
+          btnSubmitSupport.disabled = false;
+          btnSubmitSupport.textContent = 'Submit Support Request';
+
+          supportSuccessMsg.textContent = res.message || 'Support ticket created. Our team will contact you shortly.';
+          supportSuccessBanner.style.display = 'flex';
+          supportSubject.value = '';
+          supportMessage.value = '';
+          supportOrderId.value = '';
+          supportSuccessBanner.scrollIntoView({ behavior: 'smooth' });
+        }).catch(function (err) {
+          btnSubmitSupport.disabled = false;
+          btnSubmitSupport.textContent = 'Submit Support Request';
+          alert("Submission error: " + (err.message || 'Please email us directly at bhavarkaran888@gmail.com'));
+        });
+      });
+
+      // Sign Out
+      btnSignOut.addEventListener('click', function () {
+        PayEchoAuth.signOut().then(function () {
+          window.location.reload();
+        });
+      });
+
+      // Google Sign-In
+      function handleGoogleSignIn() {
+        PayEchoAuth.signInWithGoogle().catch(function (err) {
+          if (err.code !== 'auth/popup-closed-by-user') {
+            alert("Google Sign-In failed: " + err.message);
+          }
+        });
+      }
+
+      btnGoogleLoginGate.addEventListener('click', handleGoogleSignIn);
+
+      navLoginBtn.addEventListener('click', function () {
+        if (currentUser) {
+          window.location.href = 'orders-support.html';
+        } else {
+          openEmailModal();
+        }
+      });
+
+      mobileLoginBtn.addEventListener('click', function () {
+        if (currentUser) {
+          window.location.href = 'orders-support.html';
+        } else {
+          openEmailModal();
+        }
+      });
+
+      // Email Auth Modal
+      function openEmailModal() {
+        hideAuthAlert();
+        emailAuthModal.classList.add('is-open');
+      }
+
+      function closeEmailModal() {
+        emailAuthModal.classList.remove('is-open');
+      }
+
+      btnOpenEmailModal.addEventListener('click', openEmailModal);
+      btnCloseEmailModal.addEventListener('click', closeEmailModal);
+
+      tabBtnSignIn.addEventListener('click', function () {
+        hideAuthAlert();
+        tabBtnSignIn.classList.add('active');
+        tabBtnSignUp.classList.remove('active');
+        tabBtnForgot.classList.remove('active');
+        formSignIn.style.display = 'block';
+        formSignUp.style.display = 'none';
+        formForgot.style.display = 'none';
+      });
+
+      tabBtnSignUp.addEventListener('click', function () {
+        hideAuthAlert();
+        tabBtnSignUp.classList.add('active');
+        tabBtnSignIn.classList.remove('active');
+        tabBtnForgot.classList.remove('active');
+        formSignUp.style.display = 'block';
+        formSignIn.style.display = 'none';
+        formForgot.style.display = 'none';
+      });
+
+      tabBtnForgot.addEventListener('click', function () {
+        hideAuthAlert();
+        tabBtnForgot.classList.add('active');
+        tabBtnSignIn.classList.remove('active');
+        tabBtnSignUp.classList.remove('active');
+        formForgot.style.display = 'block';
+        formSignIn.style.display = 'none';
+        formSignUp.style.display = 'none';
+      });
+
+      btnSubmitSignIn.addEventListener('click', function () {
+        const email = document.getElementById('signInEmail').value.trim();
+        const pwd = document.getElementById('signInPassword').value;
+        if (!email || !pwd) {
+          showAuthAlert("Please provide email and password.");
+          return;
+        }
+        btnSubmitSignIn.disabled = true;
+        btnSubmitSignIn.textContent = 'Signing in...';
+
+        PayEchoAuth.signInWithEmail(email, pwd).then(function () {
+          closeEmailModal();
+        }).catch(function (err) {
+          showAuthAlert(err.message);
+        }).finally(function () {
+          btnSubmitSignIn.disabled = false;
+          btnSubmitSignIn.textContent = 'Sign In';
+        });
+      });
+
+      btnSubmitSignUp.addEventListener('click', function () {
+        const name = document.getElementById('signUpName').value.trim();
+        const email = document.getElementById('signUpEmail').value.trim();
+        const pwd = document.getElementById('signUpPassword').value;
+        if (!name || !email || !pwd) {
+          showAuthAlert("All fields are required.");
+          return;
+        }
+        btnSubmitSignUp.disabled = true;
+        btnSubmitSignUp.textContent = 'Creating account...';
+
+        PayEchoAuth.signUpWithEmail(email, pwd, name).then(function () {
+          closeEmailModal();
+        }).catch(function (err) {
+          showAuthAlert(err.message);
+        }).finally(function () {
+          btnSubmitSignUp.disabled = false;
+          btnSubmitSignUp.textContent = 'Create Account';
+        });
+      });
+
+      btnSubmitForgot.addEventListener('click', function () {
+        const email = document.getElementById('forgotEmail').value.trim();
+        if (!email) {
+          showAuthAlert("Please enter your registered email address.");
+          return;
+        }
+        btnSubmitForgot.disabled = true;
+        btnSubmitForgot.textContent = 'Sending link...';
+
+        PayEchoAuth.sendPasswordReset(email).then(function () {
+          alert("Password reset email sent to " + email);
+          closeEmailModal();
+        }).catch(function (err) {
+          showAuthAlert(err.message);
+        }).finally(function () {
+          btnSubmitForgot.disabled = false;
+          btnSubmitForgot.textContent = 'Send Reset Link';
+        });
+      });
+
+    })();
+  </script>
+</body>
+</html>

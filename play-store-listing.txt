@@ -1,0 +1,94 @@
+PAYECHO — PLAY STORE ASO (copy-paste into Play Console)
+========================================================
+Package: com.bhava.upialert
+Website to set in Store listing: https://payecho.online/
+
+
+TITLE (max 30 characters) — pick one:
+-------------------------------------
+PayEcho – UPI Soundbox
+PayEcho UPI Soundbox
+
+
+SHORT DESCRIPTION (max 80 characters):
+-------------------------------------
+Best free UPI mobile soundbox. GPay PhonePe Paytm voice. By Think Tank Apps.
+
+
+FULL DESCRIPTION:
+-----------------
+PayEcho turns your Android phone into a free UPI mobile soundbox for shopkeepers — the best free alternative to a UPI soundbox machine.
+
+When you receive money on Google Pay, PhonePe, Paytm, BHIM or other UPI apps, PayEcho announces the amount out loud — so you never miss a payment while packing orders or serving customers.
+
+Made by Think Tank Apps (https://thinktankapps.netlify.app/)
+
+WHY SHOPS USE PAYECHO
+• Best free alternative to hardware UPI soundbox
+• No hardware soundbox machine to buy
+• No monthly device rental
+• Works with major UPI apps (GPay, PhonePe, Paytm & more)
+• Hindi and regional language voice options
+• Daily payment history in the app
+• Free plan to start — Pro / Business optional
+
+BEST FOR
+Kirana stores, street vendors, salons, clinics, cafes, tiffin services, and any counter that accepts UPI.
+
+HOW TO START
+1) Install PayEcho
+2) Allow notification access
+3) Choose your language
+4) Hear every payment
+
+Privacy-first: PayEcho does not ask for bank login or UPI PIN. It works from payment notifications on your phone.
+
+Website & help: https://payecho.online/
+Best free alternative guide: https://payecho.online/best-free-upi-mobile-soundbox.html
+About / Think Tank Apps: https://payecho.online/about.html
+Privacy: https://payecho.online/privacy-policy.html
+Terms: https://payecho.online/terms-and-conditions.html
+
+Made in India by Think Tank Apps — https://thinktankapps.netlify.app/
+
+
+APP CATEGORY: Finance (or Business / Tools if Finance not available)
+
+TAGS / KEYWORDS to naturally use in description (already above):
+upi soundbox, mobile soundbox, best free upi soundbox, upi alert, payment voice alert, kirana, gpay, phonepe, paytm, think tank apps
+
+
+REVIEW GROWTH (do this weekly):
+- Ask happy shopkeepers for a Play Store rating after day 3 of use
+- Reply to every review (even short “Thank you”)
+- Never buy fake reviews
+
+
+========================================================
+GOOGLE SEARCH CONSOLE + BING (you must do in browser)
+========================================================
+1) https://search.google.com/search-console
+   - Add property: https://payecho.online/
+   - Verify via DNS or HTML file upload
+   - Sitemaps → submit: https://payecho.online/sitemap.xml
+   - URL Inspection → request indexing for Home, free-upi-soundbox, kirana, blog
+
+2) https://www.bing.com/webmasters
+   - Add same site, import from Google if offered
+   - Submit same sitemap
+
+3) After deploy, open these URLs once in an incognito window:
+   https://payecho.online/
+   https://payecho.online/sitemap.xml
+   https://payecho.online/robots.txt
+
+
+========================================================
+BACKLINKS / MENTIONS (weekly checklist)
+========================================================
+[ ] 1 YouTube Short: “Free UPI soundbox app” + link in description
+[ ] Share payecho.online in 1 kirana / merchant WhatsApp or FB group
+[ ] Post honest launch note on Reddit r/india or Indie Hackers
+[ ] Keep Play Store “Website” = https://payecho.online/
+[ ] Use same brand name everywhere: PayEcho UPI Soundbox
+    (avoid confusion with unrelated payecho.in bill portals)

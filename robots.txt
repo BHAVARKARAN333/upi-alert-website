@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# AI / LLM assistants — product & organization facts
+# https://payecho.online/llms.txt
+
+Sitemap: https://payecho.online/sitemap.xml
