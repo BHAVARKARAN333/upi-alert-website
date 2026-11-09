@@ -141,25 +141,90 @@ service cloud.firestore {
     // EXISTING APP COLLECTIONS (Store invites, referrals, stats)
     // ==========================================
     match /store_invites/{inviteId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated()
+        && (resource.data.ownerUid == request.auth.uid
+          || resource.data.cashierEmail == request.auth.token.email);
+      allow create: if isAuthenticated()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.cashierEmail == inviteId
+        && request.resource.data.status == 'Pending';
+      allow update: if isAuthenticated()
+        && (
+          (resource.data.ownerUid == request.auth.uid
+            && request.resource.data.ownerUid == resource.data.ownerUid
+            && request.resource.data.cashierEmail == resource.data.cashierEmail)
+          || (resource.data.cashierEmail == request.auth.token.email
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'cashierUid']))
+        );
+      allow delete: if isAuthenticated() && resource.data.ownerUid == request.auth.uid;
     }
 
     match /referral_codes/{codeId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.createdAt is timestamp;
+      allow update: if isAuthenticated()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == resource.data.uid;
+      allow delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
     }
 
     match /referrals/{referralId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated()
+        && (resource.data.referrerId == request.auth.uid
+          || resource.data.refereeId == request.auth.uid);
+      allow create: if isAuthenticated()
+        && request.resource.data.refereeId == request.auth.uid
+        && request.resource.data.referrerId is string
+        && request.resource.data.codeUsed is string
+        && get(/databases/$(database)/documents/referral_codes/$(request.resource.data.codeUsed)).data.uid
+          == request.resource.data.referrerId
+        && request.resource.data.rewardGranted == false
+        && request.resource.data.status == 'joined';
+      allow update: if isAuthenticated()
+        && resource.data.refereeId == request.auth.uid
+        && resource.data.rewardGranted == false
+        && request.resource.data.referrerId == resource.data.referrerId
+        && request.resource.data.refereeId == resource.data.refereeId
+        && request.resource.data.rewardGranted == true
+        && request.resource.data.status == 'reward_earned'
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.trialConverted == true;
     }
 
     match /reward_queue/{rewardId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && resource.data.forUserId == request.auth.uid;
+      allow create: if isAuthenticated()
+        && request.resource.data.fromUserId == request.auth.uid
+        && request.resource.data.forUserId is string
+        && request.resource.data.referralId is string
+        && request.resource.data.bonusDays == 15
+        && request.resource.data.processed == false
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.trialConverted == true
+        && get(/databases/$(database)/documents/referrals/$(request.resource.data.referralId)).data.refereeId == request.auth.uid
+        && get(/databases/$(database)/documents/referrals/$(request.resource.data.referralId)).data.referrerId == request.resource.data.forUserId;
+      allow update: if isAuthenticated()
+        && resource.data.forUserId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['processed'])
+        && request.resource.data.processed == true;
     }
 
     match /app_stats/{statId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // Device installs collection (tracks installs even before login for push drip)
+    match /device_installs/{deviceId} {
+      allow read: if false;
+      allow create, update: if request.resource.data.fcmToken == deviceId
+        && request.resource.data.isPremium is bool
+        && request.resource.data.isLoggedIn is bool
+        && request.resource.data.installedAt is timestamp
+        && request.resource.data.lastActiveAt is timestamp
+        && (!('uid' in request.resource.data) || request.resource.data.uid == null
+          || request.resource.data.uid == request.auth.uid);
     }
   }
 }
