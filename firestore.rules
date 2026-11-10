@@ -78,7 +78,12 @@ service cloud.firestore {
 
       // Subcollection: users/{userId}/transactions (cashier / soundbox sync)
       match /transactions/{txId} {
-        allow read, write: if isOwner(userId) || isAdmin();
+        allow read, write: if isAuthenticated();
+      }
+
+      // Single live sync document for real-time soundbox & cashier alerts
+      match /live_sync/{docId} {
+        allow read, write: if isAuthenticated();
       }
     }
 
@@ -142,8 +147,8 @@ service cloud.firestore {
     // ==========================================
     match /store_invites/{inviteId} {
       allow read: if isAuthenticated()
-        && (resource.data.ownerUid == request.auth.uid
-          || resource.data.cashierEmail == request.auth.token.email);
+        && (inviteId == request.auth.token.email
+          || (resource != null && (resource.data.ownerUid == request.auth.uid || resource.data.cashierEmail == request.auth.token.email)));
       allow create: if isAuthenticated()
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.cashierEmail == inviteId
@@ -155,7 +160,7 @@ service cloud.firestore {
             && request.resource.data.cashierEmail == resource.data.cashierEmail)
           || (resource.data.cashierEmail == request.auth.token.email
             && request.resource.data.diff(resource.data).affectedKeys()
-              .hasOnly(['status', 'cashierUid']))
+              .hasOnly(['status', 'cashierUid', 'lastTransaction']))
         );
       allow delete: if isAuthenticated() && resource.data.ownerUid == request.auth.uid;
     }
